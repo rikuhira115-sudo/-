@@ -3,176 +3,778 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>千葉工業大学 宇宙半導体工学科 まとめ</title>
+    <title>シールダー</title>
+    <!-- Press Start 2Pフォントをロード (ドット風フォント) -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <!-- Tailwind CSSをロード -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* CSS：宇宙やサイバー感をイメージした近未来デザイン */
-        body {
-            font-family: 'Helvetica Neue', Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
-            background-color: #0b0f19; /* ディープスペース（濃い宇宙の紺色） */
-            color: #f3f4f6;
+        /* 1. 全体設定 */
+        html, body {
+            height: 100%;
+            width: 100%;
             margin: 0;
             padding: 0;
-            line-height: 1.8;
+            overflow: hidden; /* スクロールを禁止 */
         }
 
-        /* ヘッダー（タイトル部分） */
-        header {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            padding: 40px 20px;
-            text-align: center;
-            border-bottom: 3px solid #38bdf8; /* ライトブルーのアクセントライン */
+        /* 2. 背景とフォント */
+        body {
+            /* フォントをドット風の'Press Start 2P'に変更 */
+            font-family: 'Press+Start+2P', monospace;
+            background-color: #0d1117; /* ダークネイビー/ブラック */
+            color: #f1f5f9;
+            /* bodyがビューポートの高さ全体を使ってコンテンツを中央に配置 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        h1 {
-            margin: 0;
-            font-size: 2.2rem;
-            color: #38bdf8;
-            text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+        /* 3. メインレイアウトコンテナ (ゲーム画面のみを中央に配置) */
+        #mainLayout {
+            display: flex;
+            align-items: center; /* 垂直方向の中央揃え */
+            justify-content: center; /* 水平方向の中央揃え */
+            
+            height: 100vh; 
+            max-height: 100vh;
+            max-width: 98vw; 
+            padding: 10px;
         }
 
-        .subtitle {
-            margin-top: 10px;
-            font-size: 1.1rem;
-            color: #9ca3af;
-        }
-
-        /* メインコンテンツの枠 */
-        .container {
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-
-        /* 各セクションのカード */
-        .card {
-            background-color: #1e293b;
-            padding: 30px;
+        /* 4. ゲームコンテナのスタイル - 画面の高さ基準で最大の正方形を維持 */
+        #gameContainer {
+            position: relative;
+            background-color: #000;
+            
+            /* 画面の縦横の85%を使うように拡大 */
+            width: min(85vh, 85vw); 
+            height: min(85vh, 85vw); 
+            
+            border: 4px solid #f59e0b; /* アンバー */
+            box-shadow: 0 0 40px rgba(245, 158, 11, 0.5); 
             border-radius: 12px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            border: 1px solid #334155;
+            overflow: hidden;
+            touch-action: none;
+            flex-shrink: 0; /* 縮小しない */
+            /* 画面揺れのためにtransitionを滑らかに */
+            transition: transform 0.05s ease-out;
         }
 
-        h2 {
-            color: #fbbf24; /* ゴールドのアクセント */
-            font-size: 1.5rem;
-            margin-top: 0;
-            border-left: 5px solid #fbbf24;
-            padding-left: 10px;
+        /* 豪華演出: ゲームオーバー時の点滅オーバーレイ */
+        #gameOverFlash {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: red;
+            opacity: 0;
+            transition: opacity 0.1s;
+            pointer-events: none; /* クリックを透過させる */
+            z-index: 50;
         }
-
-        ul {
-            padding-left: 20px;
+        
+        /* 5. キャンバスのスタイル */
+        #gameCanvas {
+            display: block;
+            background-color: #000;
+            border-radius: 8px;
         }
-
-        li {
-            margin-bottom: 10px;
-        }
-
-        /* 応援ボタンのスタイル */
-        .btn-container {
-            text-align: center;
-            margin-top: 40px;
-        }
-
-        #cheer-btn {
-            background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
-            color: white;
-            border: none;
-            padding: 15px 35px;
-            font-size: 1.2rem;
+        
+        /* 6. ボタンのスタイル */
+        .neon-button {
+            transition: all 0.1s ease-in-out;
             font-weight: bold;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
-            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            background-color: #38bdf8; /* ブルー */
+            color: #1f2937;
+            border: 2px solid #38bdf8;
+            box-shadow: 0 0 10px #38bdf8, 0 4px #17668b; 
+            transform: translateY(-1px);
         }
 
-        #cheer-btn:hover {
+        .neon-button:hover {
+            background-color: #7dd3fc;
+            box-shadow: 0 0 15px #7dd3fc, 0 6px #17668b;
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.6);
         }
 
-        #cheer-btn:active {
+        .neon-button:active {
             transform: translateY(1px);
+            box-shadow: 0 0 5px #38bdf8, 0 2px #17668b;
         }
 
-        #count-display {
-            font-size: 1.2rem;
-            margin-top: 15px;
-            color: #38bdf8;
-            font-weight: bold;
+        /* 7. メッセージオーバーレイ */
+        #messageOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            display: none; 
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            border-radius: 12px;
+            text-shadow: 0 0 10px #f59e0b; 
         }
 
-        /* フッター */
-        footer {
-            text-align: center;
-            padding: 30px;
-            color: #6b7280;
-            font-size: 0.9rem;
-            border-top: 1px solid #1e293b;
-            margin-top: 60px;
+        .text-neon-amber {
+            color: #f59e0b;
+            text-shadow: 0 0 10px #f59e0b;
+        }
+
+        .text-neon-red {
+            color: #f87171;
+            text-shadow: 0 0 10px #f87171;
+        }
+
+        /* モバイル対応 */
+        @media (max-width: 767px) {
+            #mainLayout {
+                height: 100%; /* 縦方向にフルに使う */
+                padding: 5px;
+            }
+            #gameContainer {
+                /* モバイル時: 画面幅の95%を使って最大化 */
+                width: 95vw;
+                height: 95vw; 
+                max-width: none;
+                max-height: none;
+            }
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>千葉工業大学 宇宙半導体工学科</h1>
-        <div class="subtitle">宇宙の過酷な環境に耐える、次世代の「頭脳」を開発する</div>
-    </header>
+<div id="mainLayout">
+    <!-- メインゲームコンテナ -->
+    <div id="gameContainer">
+        <!-- 豪華演出: ゲームオーバー時の点滅/フラッシュ用要素 -->
+        <div id="gameOverFlash"></div>
 
-    <div class="container">
+        <!-- ゲームキャンバス -->
+        <canvas id="gameCanvas" class="w-full h-full"></canvas>
 
-        <div class="card">
-            <h2>🚀 どんな学科？</h2>
-            <p>宇宙空間は、強烈な放射線や激しい温度変化など、地球上とは比べものにならないほど過酷です。そんな場所でも絶対に壊れない<strong>「宇宙仕様の半導体」</strong>を設計・製造・評価できる、世界に通用するエキスパートを育てる最先端の学科です。</p>
+        <!-- メッセージオーバーレイ (ゲーム画面内に配置) -->
+        <div id="messageOverlay" class="flex">
+            <h2 id="messageTitle" class="text-3xl sm:text-4xl font-extrabold mb-8 text-neon-amber tracking-widest text-center">
+                SHIELDER
+            </h2>
+            <p id="messageBody" class="text-lg sm:text-xl mb-12 text-gray-300 text-center leading-relaxed max-w-sm">
+                <!-- ここから説明文 -->
+                <span class="text-neon-red font-bold">プラズマ弾</span>をコアに当たる前に<span class="text-neon-amber font-bold">シールド</span>で防げ！<br>
+                <span class="text-neon-amber font-bold">WASD / 矢印キー</span>でシールドの<span class="text-neon-amber font-bold">方向を切り替え</span>、攻撃を反射せよ。<br>
+                <br>
+                <span class="text-neon-red font-bold">被弾即ゲームオーバー。</span>
+            </p>
+            <button id="startButton" class="neon-button p-4 rounded-lg text-xl">
+                スタート
+            </button>
+            <p id="spacePrompt" class="text-gray-400 mt-4 text-base">
+                <span class="text-amber-400 font-bold">スペースキー</span>でも開始/リトライ可能
+            </p>
         </div>
-
-        <div class="card">
-            <h2>📚 主な学びのテーマ</h2>
-            <ul>
-                <li><strong>耐放射線半導体：</strong> 宇宙の強い放射線を浴びても誤作動しない回路設計</li>
-                <li><strong>宇宙機・衛星搭載システム：</strong> 実際にロケットや人工衛星に載せるコンピューターの開発</li>
-                <li><strong>微細加工技術：</strong> ナノレベルで最先端の半導体を作り出すプロセス技術</li>
-                <li><strong>宇宙環境シミュレーション：</strong> 地上で宇宙の環境を再現して行う過酷な実験・評価</li>
-            </ul>
-        </div>
-
-        <div class="card">
-            <h2>✨ ここがスゴイ！千葉工大の強み</h2>
-            <p>千葉工業大学は、これまでに多くの人工衛星や探査機の開発プロジェクト、さらには国際宇宙ステーション（ISS）での実験実績を持っています。理論を学ぶだけでなく、<strong>「実際に宇宙へ行くものを作る」という超実践的な開発現場を体験できる</strong>のが最大の魅力です。</p>
-        </div>
-
-        <div class="btn-container">
-            <button id="cheer-btn">🚀 宇宙半導体工学科を応援する！</button>
-            <div id="count-display">応援数: <span id="cheer-count">0</span></div>
-        </div>
-
     </div>
+</div>
 
-    <footer>
-        &copy; 2026 宇宙半導体工学科ファンページ | Created by rikuhira115-sudo
-    </footer>
+<script>
+    // --- ゲーム設定と定数 ---
+    const CANVAS = document.getElementById('gameCanvas');
+    const CTX = CANVAS.getContext('2d');
+    
+    // --- DOM要素 ---
+    const CONTAINER = document.getElementById('gameContainer'); // 画面揺れ用
+    const OVERLAY = document.getElementById('messageOverlay');
+    const TITLE = document.getElementById('messageTitle');
+    const BODY = document.getElementById('messageBody');
+    const START_BUTTON = document.getElementById('startButton');
+    const SPACE_PROMPT = document.getElementById('spacePrompt');
+    const FLASH_OVERLAY = document.getElementById('gameOverFlash'); // フラッシュ用
 
-    <script>
-        // JavaScript：ボタンを押したらカウントが増えて、ちょっとした応援メッセージが出る仕掛け
-        let count = 0;
-        const btn = document.getElementById('cheer-btn');
-        const countDisplay = document.getElementById('cheer-count');
+    // --- ゲーム定数 ---
+    const PLAYER_RADIUS = 15;
+    const SHIELD_RADIUS = PLAYER_RADIUS + 30; // シールドの展開半径
+    const SHIELD_LENGTH = Math.PI * 0.4; // シールドの長さ (約72度)
+    const ENEMY_SPEED = 5; // 敵の速度を固定
+    const ENEMY_SPAWN_START_INTERVAL = 800; // 初期生成間隔 (ミリ秒)
+    const ENEMY_SPAWN_MIN_INTERVAL = 80;    // 最短生成間隔 (ミリ秒)
+    const MAX_DIFFICULTY_TIME = 60; // 難易度最大に達する時間（秒）
+    const SCORE_PER_SECOND = 100; // 1秒あたりの基本スコア
+    const SCORE_PER_REFLECT = 200; // 反射ごとの追加スコア
 
-        btn.addEventListener('click', () => {
-            count++;
-            countDisplay.textContent = count;
+    // シールド展開方向の角度 (ラジアン)
+    const SHIELD_ANGLES = {
+        UP: -Math.PI / 2, // 90度上
+        RIGHT: 0,        // 0度（右）
+        DOWN: Math.PI / 2, // 90度下
+        LEFT: Math.PI    // 180度（左）
+    };
+
+    // --- ゲーム状態 ---
+    let raf;
+    let isGameRunning = false;
+    let score = 0; 
+    let highScore = 0; 
+    let reflectCount = 0; // 反射回数を追跡
+
+    // 時間ベースの変数
+    let startTime = 0;      // ゲーム開始時刻 (ms)
+    let gameTime = 0;       // 現在の生存時間 (秒: 整数値)
+
+    let lastSpawnTime = 0;
+    let spawnInterval = ENEMY_SPAWN_START_INTERVAL;
+    let currentShieldAngle = null; 
+    let isShieldDeployed = false; 
+    
+    // 豪華演出: 画面揺れの状態
+    let shakeIntensity = 0;
+
+    // 豪華演出: シールドフラッシュタイマー
+    let shieldFlashTimer = 0;
+    const SHIELD_FLASH_DURATION = 5; // フラッシュの継続フレーム数 (約80ms)
+    
+    // --- ゲームオブジェクト ---
+    let player;
+    let enemies = []; 
+    let particles = [];
+
+    // --- クラス定義 ---
+    class Player {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.radius = PLAYER_RADIUS;
+            this.color = '#38bdf8'; 
+        }
+        draw() {
+            CTX.save();
+            CTX.translate(this.x, this.y);
             
-            // キリのいい数字でメッセージを変える
-            if (count === 1) {
-                alert("応援ありがとうございます！宇宙へ向けてカウントダウン開始！");
-            } else if (count === 10) {
-                alert("素晴らしい連打！人工衛星が軌道に乗りました！🛰️");
-            }
-        });
-    </script>
+            // 豪華演出: コアに脈動するグローを追加
+            const glowPulse = 1 + Math.sin(Date.now() / 200) * 0.1;
+            const currentGlow = 15 * glowPulse;
 
+            CTX.fillStyle = this.color;
+            CTX.shadowColor = this.color;
+            CTX.shadowBlur = currentGlow;
+            CTX.beginPath();
+            CTX.arc(0, 0, this.radius, 0, Math.PI * 2);
+            CTX.fill();
+            
+            // 外側のリングのグローも強化
+            CTX.strokeStyle = '#1e40af';
+            CTX.lineWidth = 3;
+            CTX.shadowColor = '#38bdf8';
+            CTX.shadowBlur = 8 * glowPulse;
+            CTX.beginPath();
+            CTX.arc(0, 0, this.radius + 8, 0, Math.PI * 2);
+            CTX.stroke();
+
+            CTX.restore();
+            CTX.shadowBlur = 0;
+        }
+    }
+
+    class Enemy {
+        constructor(x, y, vx, vy) {
+            this.x = x;
+            this.y = y;
+            this.radius = 6;
+            this.color = '#f87171';
+            this.speed = ENEMY_SPEED; 
+            this.vx = vx * this.speed; 
+            this.vy = vy * this.speed;
+        }
+
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+        }
+
+        draw() {
+            CTX.fillStyle = this.color;
+            CTX.shadowColor = this.color;
+            CTX.shadowBlur = 10;
+            CTX.beginPath();
+            CTX.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            CTX.fill();
+            CTX.shadowBlur = 0;
+        }
+    }
+
+    class Particle {
+        // typeパラメータを追加: 'NORMAL', 'EXPLOSION', 'REFLECT'
+        constructor(x, y, isExplosion = false, type = 'NORMAL') {
+            this.x = x;
+            this.y = y;
+            this.radius = Math.random() * (isExplosion ? 3 : 2) + 1;
+            
+            if (type === 'REFLECT') {
+                // 反射時はシールドの色（アンバー）とコアの色（ブルー）に限定
+                this.color = ['#f59e0b', '#f59e0b', '#38bdf8'][Math.floor(Math.random() * 3)];
+            } else {
+                // 通常/被弾時は赤も混ぜる
+                this.color = ['#f59e0b', '#38bdf8', '#f87171'][Math.floor(Math.random() * 3)];
+            }
+            
+            // 爆発時は速度を上げて派手に
+            const baseSpeed = isExplosion ? 6 : 4;
+            this.vx = (Math.random() - 0.5) * baseSpeed;
+            this.vy = (Math.random() - 0.5) * baseSpeed;
+            
+            this.alpha = 1;
+            this.life = isExplosion ? 40 : 60; // 爆発時は短命に
+        }
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            this.alpha -= 1 / this.life;
+        }
+        draw() {
+            CTX.fillStyle = this.color;
+            CTX.globalAlpha = this.alpha;
+            CTX.shadowColor = this.color;
+            CTX.shadowBlur = 5;
+            CTX.beginPath();
+            CTX.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            CTX.fill();
+            CTX.globalAlpha = 1;
+            CTX.shadowBlur = 0;
+        }
+    }
+    
+    // --- ユーティリティ関数 ---
+
+    function distance(x1, y1, x2, y2) {
+        return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+    }
+
+    function normalizeAngle(angle) {
+        let normalized = angle % (2 * Math.PI);
+        if (normalized > Math.PI) {
+            normalized -= 2 * Math.PI;
+        } else if (normalized <= -Math.PI) {
+            normalized += 2 * Math.PI;
+        }
+        return normalized;
+    }
+
+    // 豪華演出: 画面揺れ処理
+    function screenShake(intensity) {
+        shakeIntensity = intensity;
+    }
+
+    function applyScreenShake() {
+        if (shakeIntensity > 0) {
+            const offsetX = (Math.random() - 0.5) * shakeIntensity;
+            const offsetY = (Math.random() - 0.5) * shakeIntensity;
+            CONTAINER.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+            shakeIntensity *= 0.8; // 揺れを徐々に減衰
+            if (shakeIntensity < 0.5) shakeIntensity = 0;
+        } else {
+            CONTAINER.style.transform = '';
+        }
+    }
+
+    // --- ゲームロジック ---
+
+    function resizeCanvas() {
+        const container = document.getElementById('gameContainer');
+        const size = container.clientWidth; 
+        CANVAS.width = size;
+        CANVAS.height = size;
+
+        const centerX = CANVAS.width / 2;
+        const centerY = CANVAS.height / 2;
+
+        if (player) {
+            player.x = centerX;
+            player.y = centerY;
+        }
+    }
+
+    function initializeGame() {
+        resizeCanvas();
+        highScore = parseInt(localStorage.getItem('reflectShieldHighScore') || '0', 10);
+        player = new Player(CANVAS.width / 2, CANVAS.height / 2);
+        draw();
+        
+        const initialBody = `<span class="text-neon-red font-bold">プラズマ弾</span>をコアに当たる前に<span class="text-neon-amber font-bold">シールド</span>で防げ！<br>
+            <span class="text-neon-amber font-bold">WASD / 矢印キー</span>でシールドの<span class="text-neon-amber font-bold">方向を切り替え</span>、攻撃を反射せよ。<br>
+            <br>
+            <span class="text-neon-red font-bold">被弾即ゲームオーバー。</span>`;
+
+        displayMessage("SHIELDER", initialBody, true);
+    }
+
+    function startGame() {
+        if (isGameRunning) return;
+        
+        isGameRunning = true;
+        score = 0; // スコアリセット
+        reflectCount = 0; // 反射回数リセット
+        enemies = [];
+        particles = [];
+        lastSpawnTime = Date.now();
+        spawnInterval = ENEMY_SPAWN_START_INTERVAL; 
+        
+        startTime = Date.now(); 
+        gameTime = 0; 
+        shakeIntensity = 0; // 揺れをリセット
+        shieldFlashTimer = 0; // フラッシュタイマーをリセット
+        FLASH_OVERLAY.style.opacity = 0; // フラッシュをリセット
+
+        currentShieldAngle = null; 
+        isShieldDeployed = false;
+        
+        hideMessage();
+        
+        if (raf) { cancelAnimationFrame(raf); }
+        gameLoop();
+    }
+
+    function spawnEnemy() {
+        const size = CANVAS.width;
+        const centerX = size / 2;
+        const centerY = size / 2;
+        let x, y, vx, vy;
+        
+        const edge = Math.floor(Math.random() * 4); 
+        const padding = 50; 
+
+        switch(edge) {
+            case 0: // 上からコアの中心へ (真下)
+                x = centerX; 
+                y = -padding;
+                vx = 0;
+                vy = 1; 
+                break;
+            case 1: // 右からコアの中心へ (真左)
+                x = size + padding;
+                y = centerY; 
+                vx = -1; 
+                vy = 0;
+                break;
+            case 2: // 下からコアの中心へ (真上)
+                x = centerX; 
+                y = size + padding;
+                vx = 0;
+                vy = -1; 
+                break;
+            case 3: // 左からコアの中心へ (真右)
+                x = -padding;
+                y = centerY; 
+                vx = 1; 
+                vy = 0;
+                break;
+        }
+        
+        enemies.push(new Enemy(x, y, vx, vy));
+    }
+
+    /**
+     * 生存時間に基づいて敵の生成間隔を調整し、難易度を上昇させます。
+     */
+    function updateDifficulty(currentTimeSeconds) {
+        const difficultyRatio = Math.min(1, currentTimeSeconds / MAX_DIFFICULTY_TIME);
+        const intervalRange = ENEMY_SPAWN_START_INTERVAL - ENEMY_SPAWN_MIN_INTERVAL;
+        
+        spawnInterval = ENEMY_SPAWN_START_INTERVAL - (intervalRange * difficultyRatio);
+        spawnInterval = Math.max(ENEMY_SPAWN_MIN_INTERVAL, spawnInterval);
+    }
+
+    function checkCollisions() {
+        // シールド非展開時のコア被弾判定
+        if (!isShieldDeployed) {
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                const projectile = enemies[i];
+                const dist = distance(player.x, player.y, projectile.x, projectile.y);
+                
+                if (dist < player.radius + projectile.radius) {
+                    endGame();
+                    return;
+                }
+            }
+            return;
+        }
+
+        let hit = false;
+        
+        for (let i = enemies.length - 1; i >= 0; i--) {
+            const projectile = enemies[i];
+            const dist = distance(player.x, player.y, projectile.x, projectile.y);
+            
+            // 1. プレイヤー(コア)との衝突判定
+            if (dist < player.radius + projectile.radius) {
+                endGame();
+                return;
+            }
+            
+            // 2. シールドとの衝突判定
+            const shieldDist = SHIELD_RADIUS;
+            const tolerance = projectile.radius + 3; 
+
+            if (dist < shieldDist + tolerance && dist > shieldDist - tolerance) {
+                
+                const projectileAngle = Math.atan2(projectile.y - player.y, projectile.x - player.x);
+                
+                let angleDiff = Math.abs(normalizeAngle(projectileAngle) - normalizeAngle(currentShieldAngle));
+                
+                if (angleDiff > Math.PI) {
+                    angleDiff = 2 * Math.PI - angleDiff;
+                }
+
+                if (angleDiff <= SHIELD_LENGTH / 2) {
+                    hit = true;
+                }
+            }
+
+            if (hit) {
+                // 豪華演出: 反射時の画面揺れと大爆発を強化
+                screenShake(5); // 揺れ強度を3から5に強化
+                shieldFlashTimer = SHIELD_FLASH_DURATION; // シールドフラッシュをセット
+
+                reflectCount++;
+                score += SCORE_PER_REFLECT; 
+                
+                // 豪華演出: 大量のパーティクルを生成 (REFLECTタイプで色を調整)
+                for (let k = 0; k < 35; k++) { 
+                    particles.push(new Particle(projectile.x, projectile.y, true, 'REFLECT'));
+                }
+                enemies.splice(i, 1);
+                hit = false;
+            }
+        }
+    }
+
+    function update() {
+        const now = Date.now();
+        
+        // **時間の更新 (整数秒)と基本スコアの更新**
+        const newGameTime = Math.floor((now - startTime) / 1000);
+        
+        if (newGameTime > gameTime) {
+            score += (newGameTime - gameTime) * SCORE_PER_SECOND; 
+            gameTime = newGameTime;
+            updateDifficulty(gameTime); 
+        }
+
+        // シールドフラッシュタイマーの更新
+        if (shieldFlashTimer > 0) {
+            shieldFlashTimer--;
+        }
+
+        if (now - lastSpawnTime > spawnInterval) {
+            spawnEnemy();
+            lastSpawnTime = now;
+        }
+        
+        enemies.forEach(e => e.update());
+        particles.forEach(p => p.update());
+        particles = particles.filter(p => p.alpha > 0);
+
+        checkCollisions();
+    }
+
+    function drawShield() {
+        if (!isShieldDeployed || currentShieldAngle === null) return;
+
+        CTX.save();
+        CTX.translate(player.x, player.y);
+
+        // 豪華演出: シールドの脈動効果
+        const pulse = 1 + Math.sin(Date.now() / 150) * 0.15; // 0.85から1.15の間で変動
+        
+        // **フラッシュ効果の計算**
+        // タイマーが0からSHIELD_FLASH_DURATIONまで増えるほど、フラッシュ効果が最大に近づく
+        const flashRatio = shieldFlashTimer / SHIELD_FLASH_DURATION; 
+        
+        const baseLineWidth = 10;
+        const flashLineWidth = 30; // フラッシュ時の最大太さ
+        const baseShadowBlur = 20;
+        const flashShadowBlur = 80; // フラッシュ時の最大グロー
+
+        // 脈動とフラッシュを組み合わせた現在の値
+        const currentLineWidth = (baseLineWidth * pulse) + (flashLineWidth * flashRatio);
+        const currentShadowBlur = (baseShadowBlur * pulse) + (flashShadowBlur * flashRatio);
+        
+        CTX.strokeStyle = '#f59e0b'; // アンバー
+        CTX.lineWidth = currentLineWidth;
+        CTX.shadowColor = '#f59e0b';
+        CTX.shadowBlur = currentShadowBlur;
+        CTX.lineCap = 'round'; 
+
+        CTX.beginPath();
+        const startAngle = currentShieldAngle - (SHIELD_LENGTH / 2);
+        const endAngle = currentShieldAngle + (SHIELD_LENGTH / 2);
+        
+        CTX.arc(0, 0, SHIELD_RADIUS, startAngle, endAngle);
+        CTX.stroke();
+
+        CTX.restore();
+        CTX.shadowBlur = 0;
+        CTX.lineCap = 'butt'; 
+    }
+
+    function draw() {
+        CTX.clearRect(0, 0, CANVAS.width, CANVAS.height);
+        
+        particles.forEach(p => p.draw());
+        enemies.forEach(e => e.draw());
+        
+        if (player) {
+            drawShield();
+            player.draw();
+        }
+
+        // スコアと時間をゲーム画面の上部に表示 
+        if (isGameRunning) {
+            CTX.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            CTX.font = 'bold 12px "Press Start 2P"'; 
+            CTX.textAlign = 'left';
+            CTX.fillText(`SCORE: ${Math.floor(score)}`, 10, 25);
+            
+            CTX.textAlign = 'right';
+            CTX.fillText(`TIME: ${gameTime}s`, CANVAS.width - 10, 25);
+
+            CTX.textAlign = 'center';
+            CTX.fillText(`REFLECTS: ${reflectCount}`, CANVAS.width / 2, 25);
+        }
+    }
+
+    function gameLoop() {
+        if (!isGameRunning) {
+            // ゲームオーバー時もパーティクルを動かし続ける
+            draw(); 
+            return;
+        }
+
+        update();
+        applyScreenShake(); // 豪華演出: 画面揺れ適用
+        draw();
+        
+        raf = requestAnimationFrame(gameLoop);
+    }
+    
+    function endGame() {
+        isGameRunning = false;
+        cancelAnimationFrame(raf);
+        
+        // 豪華演出: 強力な画面揺れと赤いフラッシュ
+        screenShake(20); 
+        FLASH_OVERLAY.style.opacity = 0.5;
+        setTimeout(() => FLASH_OVERLAY.style.opacity = 0, 100); // 瞬間的にフェードアウト
+
+        const finalGameTime = Math.floor((Date.now() - startTime) / 1000); 
+        
+        let messageTitle, messageBody;
+
+        if (score > highScore) {
+            highScore = score;
+            localStorage.setItem('reflectShieldHighScore', highScore);
+            messageTitle = "NEW RECORD!";
+            messageBody = `生存時間: <span class="text-neon-amber font-bold text-3xl">${finalGameTime}s</span><br>反射回数: ${reflectCount}<br>最終スコア: ${Math.floor(score)}<br>驚異的な防御力です。`;
+        } else {
+            messageTitle = "GAME OVER";
+            messageBody = `生存時間: <span class="text-neon-red font-bold text-3xl">${finalGameTime}s</span><br>反射回数: ${reflectCount}<br>最終スコア: ${Math.floor(score)}<br>ハイスコア: ${highScore}<br>残念！次の挑戦を待っています。`;
+        }
+
+        // 豪華演出: コアの破壊エフェクト
+        for (let i = 0; i < 150; i++) {
+            particles.push(new Particle(player.x, player.y, true, 'EXPLOSION'));
+        }
+
+        START_BUTTON.textContent = 'RETRY (再起動)'; 
+        displayMessage(messageTitle, messageBody, true);
+    }
+
+    function displayMessage(title, body, showStart) {
+        TITLE.textContent = title;
+        BODY.innerHTML = body;
+        
+        TITLE.classList.remove('text-neon-red', 'text-neon-amber');
+        if (title.includes("GAME OVER")) {
+            TITLE.classList.add('text-neon-red');
+        } else {
+            TITLE.classList.add('text-neon-amber');
+        }
+
+        if (showStart) {
+            START_BUTTON.classList.remove('hidden');
+            SPACE_PROMPT.classList.remove('hidden'); 
+        } else {
+            START_BUTTON.classList.add('hidden');
+            SPACE_PROMPT.classList.add('hidden'); 
+        }
+        OVERLAY.style.display = 'flex';
+    }
+
+    function hideMessage() {
+        OVERLAY.style.display = 'none';
+    }
+
+    // --- イベントリスナー ---
+
+    function deployShield(direction) {
+        if (!isGameRunning) return;
+        currentShieldAngle = SHIELD_ANGLES[direction];
+        isShieldDeployed = true; 
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === ' ' && !isGameRunning && OVERLAY.style.display === 'flex') {
+            e.preventDefault(); 
+            startGame();
+            return;
+        }
+
+        if (!isGameRunning) return;
+
+        let direction = null;
+        switch (e.key) {
+            case 'w':
+            case 'W':
+            case 'ArrowUp':
+                direction = 'UP';
+                break;
+            case 's':
+            case 'S':
+            case 'ArrowDown':
+                direction = 'DOWN';
+                break;
+            case 'a':
+            case 'A':
+            case 'ArrowLeft':
+                direction = 'LEFT';
+                break;
+            case 'd':
+            case 'D':
+            case 'ArrowRight':
+                direction = 'RIGHT';
+                break;
+        }
+
+        if (direction) {
+            e.preventDefault(); 
+            deployShield(direction);
+        }
+    });
+
+    START_BUTTON.addEventListener('click', startGame);
+
+    window.addEventListener('resize', resizeCanvas);
+    
+    // 最初の画面描画とゲームループの開始
+    window.onload = () => {
+        initializeGame();
+        // 初期描画の後に、パーティクルだけは動かすためにゲームループを常時起動
+        raf = requestAnimationFrame(gameLoop);
+    };
+</script>
 </body>
 </html>
