@@ -1,533 +1,411 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>シールダー</title>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        html, body {
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: hidden; 
-            touch-action: none; /* スクロールやピンチズームを完全禁止 */
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard</title>
 
-        body {
-            font-family: 'Press+Start+2P', monospace;
-            background-color: #0d1117; 
-            color: #f1f5f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+<style>
+    body {
+        margin: 0;
+        font-family: sans-serif;
+        background: #f5f5f5;
+    }
 
-        #mainLayout {
-            display: flex;
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
-            max-height: 100vh;
-            max-width: 98vw; 
-            padding: 10px;
-        }
+    /* タブ */
+    .tabs {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        display: flex;
+        background: #fff;
+        border-top: 1px solid #ccc;
+    }
+    .tab {
+        flex: 1;
+        text-align: center;
+        padding: 12px 0;
+        cursor: pointer;
+    }
+    .tab.active {
+        background: #e0f2f1;
+        font-weight: bold;
+    }
 
-        #gameContainer {
-            position: relative;
-            background-color: #000;
-            width: min(85vh, 85vw); 
-            height: min(85vh, 85vw); 
-            border: 4px solid #f59e0b; 
-            box-shadow: 0 0 40px rgba(245, 158, 11, 0.5); 
-            border-radius: 12px;
-            overflow: hidden;
-            flex-shrink: 0; 
-            transition: transform 0.05s ease-out;
-        }
+    .page {
+        display: none;
+        padding: 16px;
+        padding-bottom: 80px;
+    }
+    .page.active {
+        display: block;
+    }
 
-        #gameOverFlash {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: red;
-            opacity: 0;
-            transition: opacity 0.1s;
-            pointer-events: none; 
-            z-index: 50;
-        }
-        
-        #gameCanvas {
-            display: block;
-            background-color: #000;
-            border-radius: 8px;
-        }
-        
-        .neon-button {
-            transition: all 0.1s ease-in-out;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            background-color: #38bdf8; 
-            color: #1f2937;
-            border: 2px solid #38bdf8;
-            box-shadow: 0 0 10px #38bdf8, 0 4px #17668b; 
-            transform: translateY(-1px);
-            -webkit-tap-highlight-color: transparent;
-        }
+    /* カレンダー */
+    #calendar {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 6px;
+        margin-top: 10px;
+    }
+    .day {
+        background: #fff;
+        padding: 10px;
+        text-align: center;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        cursor: pointer;
+    }
+    .today {
+        background: #ffe0b2;
+        border-color: #ff9800;
+    }
+    .selected {
+        background: #b2dfdb;
+        border-color: #009688;
+    }
+    .dot {
+        width: 6px;
+        height: 6px;
+        background: #009688;
+        border-radius: 50%;
+        margin: 4px auto 0;
+    }
 
-        .neon-button:hover {
-            background-color: #7dd3fc;
-            box-shadow: 0 0 15px #7dd3fc, 0 6px #17668b;
-            transform: translateY(-2px);
-        }
+    textarea {
+        width: 100%;
+        height: 120px;
+        margin-top: 10px;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        resize: none;
+    }
 
-        .neon-button:active {
-            transform: translateY(1px);
-            box-shadow: 0 0 5px #38bdf8, 0 2px #17668b;
-        }
+    /* リンク */
+    .link-item {
+        background: #fff;
+        padding: 12px;
+        margin-bottom: 10px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 
-        #messageOverlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.95);
-            display: none; 
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            border-radius: 12px;
-            text-shadow: 0 0 10px #f59e0b; 
-            padding: 20px;
-        }
+    /* 画像 */
+    .img-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    .img-box {
+        background: #fff;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        text-align: center;
+    }
+    .img-box img {
+        width: 100%;
+        border-radius: 6px;
+    }
 
-        .text-neon-amber {
-            color: #f59e0b;
-            text-shadow: 0 0 10px #f59e0b;
-        }
-
-        .text-neon-red {
-            color: #f87171;
-            text-shadow: 0 0 10px #f87171;
-        }
-
-        @media (max-width: 767px) {
-            #mainLayout {
-                height: 100%; 
-                padding: 5px;
-            }
-            #gameContainer {
-                width: 95vw;
-                height: 95vw; 
-                max-width: none;
-                max-height: none;
-            }
-        }
-    </style>
+    /* 画像追加モーダル */
+    #img-modal {
+        display:none;
+        position:fixed;
+        top:0; left:0;
+        width:100%; height:100%;
+        background:rgba(0,0,0,0.5);
+        justify-content:center;
+        align-items:center;
+    }
+    #img-modal-content {
+        background:#fff;
+        padding:20px;
+        border-radius:8px;
+        width:90%;
+        max-width:300px;
+        text-align:center;
+    }
+</style>
 </head>
 <body>
 
-<div id="mainLayout">
-    <div id="gameContainer">
-        <div id="gameOverFlash"></div>
-        <canvas id="gameCanvas" class="w-full h-full"></canvas>
+<!-- 予定 -->
+<div id="page-schedule" class="page active">
+    <h2>予定</h2>
 
-        <div id="messageOverlay" class="flex">
-            <h2 id="messageTitle" class="text-2xl sm:text-4xl font-extrabold mb-4 sm:mb-8 text-neon-amber tracking-widest text-center">
-                SHIELDER
-            </h2>
-            <p id="messageBody" class="text-xs sm:text-xl mb-6 sm:mb-12 text-gray-300 text-center leading-relaxed max-w-sm">
-                <span class="text-neon-red font-bold">プラズマ弾</span>をコアに当たる前に<span class="text-neon-amber font-bold">シールド</span>で防げ！<br>
-                <span class="text-neon-amber font-bold">画面の上下左右をタップ</span>、または<span class="text-neon-amber font-bold">WASD/矢印キー</span>でシールドを切り替えろ！<br>
-                <br>
-                <span class="text-neon-red font-bold">被弾即ゲームオーバー。</span>
-            </p>
-            <button id="startButton" class="neon-button p-3 sm:p-4 rounded-lg text-lg sm:text-xl">
-                START
-            </button>
-            <p id="spacePrompt" class="text-gray-400 mt-4 text-xs sm:text-base hidden sm:block">
-                スペースキーでも開始可能
-            </p>
-        </div>
+    <div style="display:flex; justify-content:space-between;">
+        <button onclick="changeMonth(-1)">←</button>
+        <div id="calendar-title"></div>
+        <button onclick="changeMonth(1)">→</button>
+    </div>
+
+    <div id="calendar"></div>
+
+    <h3 id="selected-date-title"></h3>
+    <textarea id="memo" placeholder="予定を入力…"></textarea>
+</div>
+
+<!-- リンク -->
+<div id="page-links" class="page">
+    <h2>リンク集</h2>
+
+    <input id="link-search" placeholder="検索…" oninput="loadLinks()" style="width:100%; padding:8px; margin-bottom:10px;">
+
+    <div id="link-list"></div>
+
+    <input id="link-name" placeholder="名前" style="width:48%; padding:8px;">
+    <input id="link-url" placeholder="URL" style="width:48%; padding:8px;">
+    <button onclick="addLink()">追加</button>
+
+    <hr>
+
+    <button onclick="pasteURL()" style="width:100%; padding:10px;">コピーしたURLを追加</button>
+</div>
+
+<!-- 画像 -->
+<div id="page-images" class="page">
+    <h2>画像ストック</h2>
+
+    <button onclick="document.getElementById('img-input').click()" style="padding:10px; width:100%;">画像を追加</button>
+    <input type="file" id="img-input" accept="image/*" style="display:none;">
+
+    <input id="img-search" placeholder="画像検索…" oninput="loadImages()" style="width:100%; padding:8px; margin:10px 0;">
+
+    <div id="img-grid" class="img-grid"></div>
+</div>
+
+<!-- 画像追加モーダル -->
+<div id="img-modal">
+    <div id="img-modal-content">
+        <h3>画像を追加</h3>
+        <img id="img-preview" style="width:100%; border-radius:6px; margin-bottom:10px;">
+        <input id="img-name-input" placeholder="名前を入力" style="width:100%; padding:8px; margin-bottom:10px;">
+        <button onclick="saveImage()" style="width:100%; padding:10px; margin-bottom:6px;">保存</button>
+        <button onclick="closeImgModal()" style="width:100%; padding:10px;">キャンセル</button>
     </div>
 </div>
 
+<!-- タブ -->
+<div class="tabs">
+    <div class="tab active" onclick="switchPage('schedule', this)">予定</div>
+    <div class="tab" onclick="switchPage('links', this)">リンク</div>
+    <div class="tab" onclick="switchPage('images', this)">画像</div>
+</div>
+
 <script>
-    const CANVAS = document.getElementById('gameCanvas');
-    const CTX = CANVAS.getContext('2d');
-    
-    const CONTAINER = document.getElementById('gameContainer'); 
-    const OVERLAY = document.getElementById('messageOverlay');
-    const TITLE = document.getElementById('messageTitle');
-    const BODY = document.getElementById('messageBody');
-    const START_BUTTON = document.getElementById('startButton');
-    const SPACE_PROMPT = document.getElementById('spacePrompt');
-    const FLASH_OVERLAY = document.getElementById('gameOverFlash'); 
+/* ページ切り替え */
+function switchPage(page, tab) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById("page-" + page).classList.add('active');
 
-    const PLAYER_RADIUS = 15;
-    const SHIELD_RADIUS = PLAYER_RADIUS + 30; 
-    const SHIELD_LENGTH = Math.PI * 0.4; 
-    const ENEMY_SPEED = 5; 
-    const ENEMY_SPAWN_START_INTERVAL = 800; 
-    const ENEMY_SPAWN_MIN_INTERVAL = 80;    
-    const MAX_DIFFICULTY_TIME = 60; 
-    const SCORE_PER_SECOND = 100; 
-    const SCORE_PER_REFLECT = 200; 
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+}
 
-    const SHIELD_ANGLES = {
-        UP: -Math.PI / 2, 
-        RIGHT: 0,        
-        DOWN: Math.PI / 2, 
-        LEFT: Math.PI    
-    };
+/* カレンダー */
+let current = new Date();
+let selectedDate = null;
 
-    let raf;
-    let isGameRunning = false;
-    let score = 0; 
-    let highScore = 0; 
-    let reflectCount = 0; 
-    let startTime = 0;      
-    let gameTime = 0;       
-    let lastSpawnTime = 0;
-    let spawnInterval = ENEMY_SPAWN_START_INTERVAL;
-    let currentShieldAngle = null; 
-    let isShieldDeployed = false; 
-    let shakeIntensity = 0;
-    let shieldFlashTimer = 0;
-    const SHIELD_FLASH_DURATION = 5; 
-    
-    let player;
-    let enemies = []; 
-    let particles = [];
+function generateCalendar() {
+    const year = current.getFullYear();
+    const month = current.getMonth();
 
-    class Player {
-        constructor(x, y) {
-            this.x = x;
-            this.y = y;
-            this.radius = PLAYER_RADIUS;
-            this.color = '#38bdf8'; 
+    document.getElementById("calendar-title").textContent = `${year}年 ${month + 1}月`;
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const lastDate = new Date(year, month + 1, 0).getDate();
+
+    const cal = document.getElementById("calendar");
+    cal.innerHTML = "";
+
+    for (let i = 0; i < firstDay; i++) {
+        cal.innerHTML += `<div></div>`;
+    }
+
+    for (let d = 1; d <= lastDate; d++) {
+        const dateStr = `${year}-${month + 1}-${d}`;
+        const today = new Date();
+        let cls = "day";
+
+        if (d === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+            cls += " today";
         }
-        draw() {
-            CTX.save();
-            CTX.translate(this.x, this.y);
-            const glowPulse = 1 + Math.sin(Date.now() / 200) * 0.1;
-            const currentGlow = 15 * glowPulse;
+        if (dateStr === selectedDate) cls += " selected";
 
-            CTX.fillStyle = this.color;
-            CTX.shadowColor = this.color;
-            CTX.shadowBlur = currentGlow;
-            CTX.beginPath();
-            CTX.arc(0, 0, this.radius, 0, Math.PI * 2);
-            CTX.fill();
-            
-            CTX.strokeStyle = '#1e40af';
-            CTX.lineWidth = 3;
-            CTX.shadowColor = '#38bdf8';
-            CTX.shadowBlur = 8 * glowPulse;
-            CTX.beginPath();
-            CTX.arc(0, 0, this.radius + 8, 0, Math.PI * 2);
-            CTX.stroke();
-            CTX.restore();
-        }
-    }
+        const hasMemo = localStorage.getItem("memo-" + dateStr);
 
-    class Enemy {
-        constructor(x, y, vx, vy) {
-            this.x = x;
-            this.y = y;
-            this.radius = 6;
-            this.color = '#f87171';
-            this.speed = ENEMY_SPEED; 
-            this.vx = vx * this.speed; 
-            this.vy = vy * this.speed;
-        }
-        update() {
-            this.x += this.vx;
-            this.y += this.vy;
-        }
-        draw() {
-            CTX.fillStyle = this.color;
-            CTX.shadowColor = this.color;
-            CTX.shadowBlur = 10;
-            CTX.beginPath();
-            CTX.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-            CTX.fill();
-            CTX.shadowBlur = 0;
-        }
+        cal.innerHTML += `
+            <div class="${cls}" onclick="selectDate('${dateStr}')">
+                ${d}
+                ${hasMemo ? '<div class="dot"></div>' : ''}
+            </div>
+        `;
     }
+}
 
-    class Particle {
-        constructor(x, y, isExplosion = false, type = 'NORMAL') {
-            this.x = x;
-            this.y = y;
-            this.radius = Math.random() * (isExplosion ? 3 : 2) + 1;
-            this.color = type === 'REFLECT' ? ['#f59e0b', '#f59e0b', '#38bdf8'][Math.floor(Math.random() * 3)] : ['#f59e0b', '#38bdf8', '#f87171'][Math.floor(Math.random() * 3)];
-            const baseSpeed = isExplosion ? 6 : 4;
-            this.vx = (Math.random() - 0.5) * baseSpeed;
-            this.vy = (Math.random() - 0.5) * baseSpeed;
-            this.alpha = 1;
-            this.life = isExplosion ? 40 : 60; 
-        }
-        update() {
-            this.x += this.vx;
-            this.y += this.vy;
-            this.alpha -= 1 / this.life;
-        }
-        draw() {
-            CTX.fillStyle = this.color;
-            CTX.globalAlpha = this.alpha;
-            CTX.shadowColor = this.color;
-            CTX.shadowBlur = 5;
-            CTX.beginPath();
-            CTX.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-            CTX.fill();
-            CTX.globalAlpha = 1;
-            CTX.shadowBlur = 0;
-        }
-    }
-    
-    function distance(x1, y1, x2, y2) { return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2)); }
-    function normalizeAngle(angle) {
-        let normalized = angle % (2 * Math.PI);
-        if (normalized > Math.PI) normalized -= 2 * Math.PI;
-        else if (normalized <= -Math.PI) normalized += 2 * Math.PI;
-        return normalized;
-    }
-    function screenShake(intensity) { shakeIntensity = intensity; }
-    function applyScreenShake() {
-        if (shakeIntensity > 0) {
-            const offsetX = (Math.random() - 0.5) * shakeIntensity;
-            const offsetY = (Math.random() - 0.5) * shakeIntensity;
-            CONTAINER.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-            shakeIntensity *= 0.8;
-            if (shakeIntensity < 0.5) shakeIntensity = 0;
-        } else { CONTAINER.style.transform = ''; }
-    }
+function changeMonth(diff) {
+    current.setMonth(current.getMonth() + diff);
+    generateCalendar();
+}
 
-    function resizeCanvas() {
-        const size = CONTAINER.clientWidth; 
-        CANVAS.width = size;
-        CANVAS.height = size;
-        if (player) { player.x = size / 2; player.y = size / 2; }
-    }
+function selectDate(date) {
+    selectedDate = date;
+    document.getElementById("selected-date-title").textContent = date;
+    document.getElementById("memo").value = localStorage.getItem("memo-" + date) || "";
+    generateCalendar();
+}
 
-    function initializeGame() {
-        resizeCanvas();
-        highScore = parseInt(localStorage.getItem('reflectShieldHighScore') || '0', 10);
-        player = new Player(CANVAS.width / 2, CANVAS.height / 2);
-        draw();
+document.getElementById("memo").oninput = () => {
+    if (selectedDate) {
+        localStorage.setItem("memo-" + selectedDate, document.getElementById("memo").value);
+        generateCalendar();
     }
+};
 
-    function startGame() {
-        if (isGameRunning) return;
-        isGameRunning = true;
-        score = 0; reflectCount = 0; enemies = []; particles = [];
-        lastSpawnTime = Date.now(); spawnInterval = ENEMY_SPAWN_START_INTERVAL; 
-        startTime = Date.now(); gameTime = 0; shakeIntensity = 0; shieldFlashTimer = 0;
-        FLASH_OVERLAY.style.opacity = 0; currentShieldAngle = null; isShieldDeployed = false;
-        hideMessage();
-        if (raf) cancelAnimationFrame(raf);
-        gameLoop();
-    }
+generateCalendar();
 
-    function spawnEnemy() {
-        const size = CANVAS.width;
-        const centerX = size / 2; const centerY = size / 2;
-        let x, y, vx, vy;
-        const edge = Math.floor(Math.random() * 4); 
-        const padding = 50; 
-        switch(edge) {
-            case 0: x = centerX; y = -padding; vx = 0; vy = 1; break; // 上
-            case 1: x = size + padding; y = centerY; vx = -1; vy = 0; break; // 右
-            case 2: x = centerX; y = size + padding; vx = 0; vy = -1; break; // 下
-            case 3: x = -padding; y = centerY; vx = 1; vy = 0; break; // 左
-        }
-        enemies.push(new Enemy(x, y, vx, vy));
-    }
+/* リンク */
+function loadLinks() {
+    const keyword = document.getElementById("link-search").value.toLowerCase();
+    const list = JSON.parse(localStorage.getItem("links") || "[]");
+    const container = document.getElementById("link-list");
+    container.innerHTML = "";
 
-    function updateDifficulty(currentTimeSeconds) {
-        const difficultyRatio = Math.min(1, currentTimeSeconds / MAX_DIFFICULTY_TIME);
-        const intervalRange = ENEMY_SPAWN_START_INTERVAL - ENEMY_SPAWN_MIN_INTERVAL;
-        spawnInterval = ENEMY_SPAWN_START_INTERVAL - (intervalRange * difficultyRatio);
-        spawnInterval = Math.max(ENEMY_SPAWN_MIN_INTERVAL, spawnInterval);
-    }
+    list
+        .filter(item => item.name.toLowerCase().includes(keyword))
+        .forEach((item, index) => {
+            container.innerHTML += `
+                <div class="link-item">
+                    <a href="${item.url}" target="_blank">${item.name}</a>
+                    <button onclick="deleteLink(${index})">削除</button>
+                </div>
+            `;
+        });
+}
 
-    function checkCollisions() {
-        if (!isShieldDeployed) {
-            for (let i = enemies.length - 1; i >= 0; i--) {
-                if (distance(player.x, player.y, enemies[i].x, enemies[i].y) < player.radius + enemies[i].radius) {
-                    endGame(); return;
-                }
-            }
+function addLink() {
+    const name = document.getElementById("link-name").value;
+    const url = document.getElementById("link-url").value;
+    if (!name || !url) return;
+
+    const list = JSON.parse(localStorage.getItem("links") || "[]");
+    list.push({ name, url });
+    localStorage.setItem("links", JSON.stringify(list));
+    loadLinks();
+}
+
+function deleteLink(i) {
+    const list = JSON.parse(localStorage.getItem("links") || "[]");
+    list.splice(i, 1);
+    localStorage.setItem("links", JSON.stringify(list));
+    loadLinks();
+}
+
+loadLinks();
+
+async function pasteURL() {
+    try {
+        const text = await navigator.clipboard.readText();
+        if (!/^https?:\/\//.test(text)) {
+            alert("コピーされた内容がURLではありません");
             return;
         }
-        let hit = false;
-        for (let i = enemies.length - 1; i >= 0; i--) {
-            const projectile = enemies[i];
-            const dist = distance(player.x, player.y, projectile.x, projectile.y);
-            if (dist < player.radius + projectile.radius) { endGame(); return; }
-            const shieldDist = SHIELD_RADIUS;
-            const tolerance = projectile.radius + 3; 
-            if (dist < shieldDist + tolerance && dist > shieldDist - tolerance) {
-                const projectileAngle = Math.atan2(projectile.y - player.y, projectile.x - player.x);
-                let angleDiff = Math.abs(normalizeAngle(projectileAngle) - normalizeAngle(currentShieldAngle));
-                if (angleDiff > Math.PI) angleDiff = 2 * Math.PI - angleDiff;
-                if (angleDiff <= SHIELD_LENGTH / 2) hit = true;
-            }
-            if (hit) {
-                screenShake(5); shieldFlashTimer = SHIELD_FLASH_DURATION;
-                reflectCount++; score += SCORE_PER_REFLECT; 
-                for (let k = 0; k < 35; k++) particles.push(new Particle(projectile.x, projectile.y, true, 'REFLECT'));
-                enemies.splice(i, 1); hit = false;
-            }
-        }
+        document.getElementById("link-url").value = text;
+        alert("URL欄に貼り付けました");
+    } catch {
+        alert("クリップボードの読み取りが許可されていません");
     }
+}
 
-    function update() {
-        const now = Date.now();
-        const newGameTime = Math.floor((now - startTime) / 1000);
-        if (newGameTime > gameTime) {
-            score += (newGameTime - gameTime) * SCORE_PER_SECOND; 
-            gameTime = newGameTime; updateDifficulty(gameTime); 
-        }
-        if (shieldFlashTimer > 0) shieldFlashTimer--;
-        if (now - lastSpawnTime > spawnInterval) { spawnEnemy(); lastSpawnTime = now; }
-        enemies.forEach(e => e.update());
-        particles.forEach(p => p.update());
-        particles = particles.filter(p => p.alpha > 0);
-        checkCollisions();
-    }
+/* 画像 */
+let tempImageData = null;
 
-    function drawShield() {
-        if (!isShieldDeployed || currentShieldAngle === null) return;
-        CTX.save();
-        CTX.translate(player.x, player.y);
-        const pulse = 1 + Math.sin(Date.now() / 150) * 0.15; 
-        const flashRatio = shieldFlashTimer / SHIELD_FLASH_DURATION; 
-        const currentLineWidth = (10 * pulse) + (30 * flashRatio);
-        const currentShadowBlur = (20 * pulse) + (80 * flashRatio);
-        CTX.strokeStyle = '#f59e0b'; CTX.lineWidth = currentLineWidth;
-        CTX.shadowColor = '#f59e0b'; CTX.shadowBlur = currentShadowBlur;
-        CTX.lineCap = 'round'; CTX.beginPath();
-        CTX.arc(0, 0, SHIELD_RADIUS, currentShieldAngle - (SHIELD_LENGTH / 2), currentShieldAngle + (SHIELD_LENGTH / 2));
-        CTX.stroke(); CTX.restore();
-    }
+document.getElementById("img-input").onchange = function () {
+    const file = this.files[0];
+    if (!file) return;
 
-    function draw() {
-        CTX.clearRect(0, 0, CANVAS.width, CANVAS.height);
-        particles.forEach(p => p.draw());
-        enemies.forEach(e => e.draw());
-        if (player) { drawShield(); player.draw(); }
-        if (isGameRunning) {
-            CTX.fillStyle = 'rgba(255, 255, 255, 0.7)';
-            CTX.font = 'bold 9px "Press Start 2P"'; 
-            CTX.textAlign = 'left'; CTX.fillText(`SC:${Math.floor(score)}`, 8, 20);
-            CTX.textAlign = 'right'; CTX.fillText(`TIME:${gameTime}s`, CANVAS.width - 8, 20);
-            CTX.textAlign = 'center'; CTX.fillText(`RF:${reflectCount}`, CANVAS.width / 2, 20);
-        }
-    }
-
-    function gameLoop() {
-        if (!isGameRunning) { draw(); return; }
-        update(); applyScreenShake(); draw();
-        raf = requestAnimationFrame(gameLoop);
-    }
-    
-    function endGame() {
-        isGameRunning = false; cancelAnimationFrame(raf);
-        screenShake(20); FLASH_OVERLAY.style.opacity = 0.5;
-        setTimeout(() => FLASH_OVERLAY.style.opacity = 0, 100);
-        const finalGameTime = Math.floor((Date.now() - startTime) / 1000); 
-        let messageTitle, messageBody;
-        if (score > highScore) {
-            highScore = score; localStorage.setItem('reflectShieldHighScore', highScore);
-            messageTitle = "NEW RECORD!";
-            messageBody = `TIME: <span class="text-neon-amber font-bold">${finalGameTime}s</span><br>REFLECT: ${reflectCount}<br>SCORE: ${Math.floor(score)}`;
-        } else {
-            messageTitle = "GAME OVER";
-            messageBody = `TIME: <span class="text-neon-red font-bold">${finalGameTime}s</span><br>REFLECT: ${reflectCount}<br>SCORE: ${Math.floor(score)}<br>BEST: ${highScore}`;
-        }
-        for (let i = 0; i < 150; i++) particles.push(new Particle(player.x, player.y, true, 'EXPLOSION'));
-        START_BUTTON.textContent = 'RETRY'; 
-        displayMessage(messageTitle, messageBody, true);
-    }
-
-    function displayMessage(title, body, showStart) {
-        TITLE.textContent = title; BODY.innerHTML = body;
-        TITLE.classList.remove('text-neon-red', 'text-neon-amber');
-        if (title.includes("GAME OVER")) TITLE.classList.add('text-neon-red');
-        else TITLE.classList.add('text-neon-amber');
-        OVERLAY.style.display = 'flex';
-    }
-    function hideMessage() { OVERLAY.style.display = 'none'; }
-
-    function deployShield(direction) {
-        if (!isGameRunning) return;
-        currentShieldAngle = SHIELD_ANGLES[direction];
-        isShieldDeployed = true; 
-    }
-
-    // 📱 【スマホ用新規実装】タップされた位置から「上下左右」を判定してシールドを張る処理
-    function handleTouchOrClick(clientX, clientY) {
-        if (!isGameRunning) return;
-        const rect = CANVAS.getBoundingClientRect();
-        // タップされた相対座標（キャンバスの中心を0,0とする）
-        const touchX = clientX - rect.left - (CANVAS.width / 2);
-        const touchY = clientY - rect.top - (CANVAS.height / 2);
-
-        // 斜め45度で4分割して上下左右を判定
-        if (Math.abs(touchX) > Math.abs(touchY)) {
-            if (touchX > 0) deployShield('RIGHT');
-            else deployShield('LEFT');
-        } else {
-            if (touchY > 0) deployShield('DOWN');
-            else deployShield('UP');
-        }
-    }
-
-    // キャンバスのタッチイベント登録
-    CANVAS.addEventListener('touchstart', (e) => {
-        if (e.touches.length > 0) {
-            handleTouchOrClick(e.touches[0].clientX, e.touches[0].clientY);
-        }
-    }, { passive: true });
-
-    // PCでのマウスデバッグ用クリックイベント
-    CANVAS.addEventListener('mousedown', (e) => {
-        handleTouchOrClick(e.clientX, e.clientY);
-    });
-
-    // キーボード操作も残す
-    document.addEventListener('keydown', (e) => {
-        if (e.key === ' ' && !isGameRunning && OVERLAY.style.display === 'flex') {
-            startGame(); return;
-        }
-        if (!isGameRunning) return;
-        let direction = null;
-        switch (e.key) {
-            case 'w': case 'W': case 'ArrowUp': direction = 'UP'; break;
-            case 's': case 'S': case 'ArrowDown': direction = 'DOWN'; break;
-            case 'a': case 'A': case 'ArrowLeft': direction = 'LEFT'; break;
-            case 'd': case 'D': case 'ArrowRight': direction = 'RIGHT'; break;
-        }
-        if (direction) { e.preventDefault(); deployShield(direction); }
-    });
-
-    START_BUTTON.addEventListener('click', startGame);
-    window.addEventListener('resize', resizeCanvas);
-    
-    window.onload = () => {
-        initializeGame();
-        displayMessage("SHIELDER", `コアを守れ！<br>画面の上下左右をタップしてシールドを展開せよ。`, true);
-        raf = requestAnimationFrame(gameLoop);
+    const reader = new FileReader();
+    reader.onload = function () {
+        tempImageData = reader.result;
+        document.getElementById("img-preview").src = tempImageData;
+        document.getElementById("img-modal").style.display = "flex";
     };
+    reader.readAsDataURL(file);
+};
+
+function saveImage() {
+    const name = document.getElementById("img-name-input").value;
+    if (!name) {
+        alert("名前を入力してください");
+        return;
+    }
+
+    const list = JSON.parse(localStorage.getItem("images") || "[]");
+    list.push({
+        id: Date.now(),
+        name,
+        src: tempImageData
+    });
+
+    localStorage.setItem("images", JSON.stringify(list));
+
+    closeImgModal();
+    loadImages();
+}
+
+function closeImgModal() {
+    document.getElementById("img-modal").style.display = "none";
+    document.getElementById("img-name-input").value = "";
+    tempImageData = null;
+}
+
+function loadImages() {
+    const keyword = document.getElementById("img-search").value.toLowerCase();
+    const list = JSON.parse(localStorage.getItem("images") || "[]");
+    const grid = document.getElementById("img-grid");
+    grid.innerHTML = "";
+
+    list
+        .filter(item => item.name.toLowerCase().includes(keyword))
+        .forEach(item => {
+            grid.innerHTML += `
+                <div class="img-box">
+                    <img src="${item.src}">
+                    <div>${item.name}</div>
+                    <button onclick="editImageName(${item.id})">名前変更</button>
+                    <button onclick="deleteImage(${item.id})">削除</button>
+                </div>
+            `;
+        });
+}
+
+function editImageName(id) {
+    const list = JSON.parse(localStorage.getItem("images") || "[]");
+    const img = list.find(i => i.id === id);
+    if (!img) return;
+
+    const newName = prompt("新しい名前を入力してください", img.name);
+    if (!newName) return;
+
+    img.name = newName;
+    localStorage.setItem("images", JSON.stringify(list));
+    loadImages();
+}
+
+function deleteImage(id) {
+    let list = JSON.parse(localStorage.getItem("images") || "[]");
+    list = list.filter(i => i.id !== id);
+    localStorage.setItem("images", JSON.stringify(list));
+    loadImages();
+}
+
+loadImages();
 </script>
+
 </body>
 </html>
